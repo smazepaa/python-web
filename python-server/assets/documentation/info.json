@@ -1,0 +1,60 @@
+{
+  "apiDocumentation": {
+    "overview": "This API provides functionalities for parsing URLs, serving image files, and analyzing text content.",
+    "baseURL": "http://localhost:4000",
+    "endpoints": [
+      {
+        "path": "/parse-url",
+        "method": "POST",
+        "description": "Parses a given URL and returns its components if it is valid. If not - shows the missing part",
+        "requestFormat": {
+          "contentType": "text/plain",
+          "body": "A URL string to be parsed."
+        },
+        "responseFormat": {
+          "contentType": "application/json",
+          "body": {
+            "URL": "String",
+            "Protocol": "String",
+            "Domain": "String",
+            "Path to the Resource": ["String"],
+            "Query Parameters": {
+              "param1": ["String"],
+              "param2": ["String"]
+            }
+          }
+        }
+      },
+      {
+        "path": "/image/{filename}",
+        "method": "GET",
+        "description": "Serves an image file from the server.",
+        "responseFormat": {
+          "contentType": "image/jpeg or image/png",
+          "body": "Binary data of the requested image file or error message about file absence"
+        }
+      },
+      {
+        "path": "/parse-txt",
+        "method": "POST",
+        "description": "Analyzes the text content of an uploaded file for a specific search string.",
+        "requestFormat": {
+          "contentType": "multipart/form-data",
+          "body": {
+            "file": "File (text file containing the content to be analyzed)",
+            "string": "String (the string to search for within the text)"
+          }
+        },
+        "responseFormat": {
+          "contentType": "application/json",
+          "body": {
+            "Total Length": "Number (length of the entire text)",
+            "Total Alphanumeric Count": "Number (count of alphanumeric symbols in the text)",
+            "Unique Alphanumeric Count": "Number (count of unique alphanumeric symbols in the text)",
+            "Occurrences of String In Text": "Number (number of occurrences of the search string in the text)"
+          }
+        }
+      }
+    ]
+  }
+}

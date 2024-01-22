@@ -11,7 +11,6 @@ def parse_parts(parts):
             body = body.rstrip(b'\r\n')  # Remove trailing new line characters
 
             # Extracting name and optionally filename from headers
-            name = None
             for header in headers.split(b'\r\n'):
                 if b'Content-Disposition' in header:
                     name = re.findall(r'name="([^"]+)"', header.decode())[0]

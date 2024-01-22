@@ -13,7 +13,11 @@ class SimpleHandler(SimpleHTTPRequestHandler):
         self.send_header('Content-type', content_type)
         self.end_headers()
         if content_type == 'application/json':
-            self.wfile.write(bytes(json.dumps(message), 'utf8'))
+            # Ensure that JSON data is sent as a JSON object
+            if isinstance(message, dict):
+                self.wfile.write(bytes(json.dumps(message), 'utf8'))
+            else:
+                self.wfile.write(bytes(message, 'utf8'))
         elif content_type == 'text/html':
             self.wfile.write(bytes(message, 'utf8'))
         else:  # means it's a file
@@ -26,7 +30,7 @@ class SimpleHandler(SimpleHTTPRequestHandler):
         else:
             self._send_response(url_info, content_type='application/json')
 
-    def _send_file(self, filename):
+    def _send_image(self, filename):
         file_path = 'assets/images/' + filename
         content_type = mimetypes.guess_type(file_path)[0]
 
@@ -35,6 +39,21 @@ class SimpleHandler(SimpleHTTPRequestHandler):
                 self._send_response(file, content_type=content_type)
         except IOError:
             self._send_response({'error': 'File not found'}, status=404, content_type='application/json')
+
+    def _send_json_file(self, file_name):
+        try:
+            with open(file_name, 'r') as file:
+                # Parse the JSON file content
+                json_content = json.load(file)
+
+                # Convert JSON object to a formatted string (pretty print)
+                formatted_json = json.dumps(json_content, indent=4)
+
+                self._send_response(formatted_json, content_type='application/json')
+        except IOError:
+            self._send_response({'error': 'File not found'}, status=404, content_type='application/json')
+        except json.JSONDecodeError:
+            self._send_response({'error': 'Invalid JSON format'}, status=500, content_type='application/json')
 
     def _parse_multipart(self, data):
         content_type = self.headers['Content-Type']
@@ -48,10 +67,12 @@ class SimpleHandler(SimpleHTTPRequestHandler):
         return parse_parts(parts)
 
     def do_GET(self):
-        print(self.path)
+
+        if self.path == '/':
+            self._send_json_file('./assets/documentation/info.json')
 
         if self.path.startswith('/image/'):
-            self._send_file(self.path[len('/image/'):])
+            self._send_image(self.path[len('/image/'):])
 
     def do_POST(self):
         content_length = int(self.headers['Content-Length'])
